@@ -372,11 +372,21 @@ def process_exercise_feed(exercise):
     st.markdown("---")
     st.markdown('<div class="exercise-title"><h3>🎥 Live Exercise Detection</h3></div>', unsafe_allow_html=True)
     
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    cap.set(cv2.CAP_PROP_FPS, 30)
-    
+    #ap = cv2.VideoCapture(0)
+    #ap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    #ap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    #p.set(cv2.CAP_PROP_FPS, 30)
+    img_file_buffer = st.camera_input("Take a picture or video")
+
+if img_file_buffer is not None:
+    # To read image bytes as np array
+    bytes_data = img_file_buffer.getvalue()
+    np_img = np.frombuffer(bytes_data, np.uint8)
+    frame = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
+
+    # process frame here
+    st.image(frame, channels="BGR")
+
     video_placeholder = st.empty()
     
     while st.session_state.webcam_active:
