@@ -367,54 +367,71 @@ def yoga_page():
     if st.session_state.webcam_active:
         process_yoga_feed(yoga_pose)
 
-def process_exercise_feed(exercise):
-    """Process real-time webcam feed for exercises"""
-    st.markdown("---")
-    st.markdown('<div class="exercise-title"><h3>🎥 Live Exercise Detection</h3></div>', unsafe_allow_html=True)
+import cv2
+import streamlit as st
+import mediapipe as mp
+import time
 
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    cap.set(cv2.CAP_PROP_FPS, 30)
+def process_exercise_feed():
+    st.title("🧍‍♂️ Real-Time Exercise Pose Estimation")
+    
+    # Dropdown with visible label
+    selected_exercise = st.selectbox("Select an exercise", ["Jumping Jacks", "Squats", "Pushups"])
+    
+    # Start webcam button
+    start = st.button("Start Camera")
+    
+    if start:
+        # MediaPipe pose setup
+        mp_drawing = mp.solutions.drawing_utils
+        mp_pose = mp.solutions.pose
 
-    video_placeholder = st.empty()
+        cap = cv2.VideoCapture(0)
 
-    while st.session_state.webcam_active:
-        ret, frame = cap.read()
-        if not ret:
-            st.error("Camera error")
-            break
+        if not cap.isOpened():
+            st.error("❌ Unable to open camera. Please check your webcam.")
+            return
+        
+        stframe = st.empty()  # Placeholder for live video
 
-        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = pose.process(image)
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+            try:
+                while True:
+                    ret, frame = cap.read()
+                    if not ret:
+                        st.warning("⚠️ Unable to read from webcam.")
+                        break
 
-        if results.pose_landmarks:
-            if exercise == "Squats":
-                process_squats(results.pose_landmarks, image)
-            elif exercise == "Hand Raises":
-                process_hand_raises(results.pose_landmarks, image)
-            elif exercise == "Push-ups":
-                process_pushups(results.pose_landmarks, image)
-            elif exercise == "Lunges":
-                process_lunges(results.pose_landmarks, image)
-            elif exercise == "Bicep Curls":
-                process_bicep_curls(results.pose_landmarks, image)
-            elif exercise == "Jumping Jacks":
-                process_jumping_jacks(results.pose_landmarks, image)
-            elif exercise == "Shoulder Press":
-                process_shoulder_press(results.pose_landmarks, image)
-            elif exercise == "Plank":
-                process_plank(results.pose_landmarks, image)
+                    # Flip and convert
+                    frame = cv2.flip(frame, 1)
+                    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    image.flags.writeable = False
 
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                    results = pose.process(image)
 
-        cv2.putText(image, f"Reps: {st.session_state.counter}", (10, 30),
-                    cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 0, 0), 2)
+                    # Draw landmarks
+                    image.flags.writeable = True
+                    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-        video_placeholder.image(image, channels="BGR")
+                    if results.pose_landmarks:
+                        mp_drawing.draw_landmarks(
+                            image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS
+                        )
 
-    cap.release()
+                    # Show frame in Streamlit
+                    stframe.image(image, channels="BGR")
+
+                    # Allow stopping with a stop button
+                    if st.button("Stop", key="stop_button"):
+                        break
+
+            except Exception as e:
+                st.error(f"❌ Error: {e}")
+
+            finally:
+                cap.release()
+                cv2.destroyAllWindows()
+
 
     
 
