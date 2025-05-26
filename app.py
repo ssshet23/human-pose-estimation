@@ -367,12 +367,10 @@ def yoga_page():
     if st.session_state.webcam_active:
         process_yoga_feed(yoga_pose)
 
-import cv2
-import streamlit as st
-import mediapipe as mp
-import time
 
-def process_exercise_feed():
+
+def process_exercise_feed(*args, **kwargs):
+
     st.title("🧍‍♂️ Real-Time Exercise Pose Estimation")
     
     # Dropdown with visible label
