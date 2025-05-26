@@ -123,7 +123,6 @@ def set_page_config():
             padding: 10px;
             margin-top: 20px;
         }
-                
         .feedback-good {
             color: #4CAF50;
             font-weight: bold;
@@ -415,11 +414,11 @@ def process_exercise_feed(exercise):
         
         video_placeholder.image(image, channels="BGR")
         
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+       #if cv2.waitKey(1) & 0xFF == ord('q'):
+         #  break
 
     cap.release()
-    cv2.destroyAllWindows()
+    
 
 def process_yoga_feed(yoga_pose):
     """Process real-time webcam feed for yoga poses"""
@@ -480,11 +479,11 @@ def process_yoga_feed(yoga_pose):
         
         video_placeholder.image(image, channels="BGR")
         
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+       #if cv2.waitKey(1) & 0xFF == ord('q'):
+         #  break
 
     cap.release()
-    cv2.destroyAllWindows()
+   #cv2.destroyAllWindows()
 
 # ===== EXERCISE PROCESSING FUNCTIONS =====
 
