@@ -371,34 +371,24 @@ def process_exercise_feed(exercise):
     """Process real-time webcam feed for exercises"""
     st.markdown("---")
     st.markdown('<div class="exercise-title"><h3>🎥 Live Exercise Detection</h3></div>', unsafe_allow_html=True)
-    
-    #ap = cv2.VideoCapture(0)
-    #ap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    #ap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    #p.set(cv2.CAP_PROP_FPS, 30)
-    img_file_buffer = st.camera_input("Take a picture or video")
 
-if img_file_buffer is not None:
-    # To read image bytes as np array
-    bytes_data = img_file_buffer.getvalue()
-    np_img = np.frombuffer(bytes_data, np.uint8)
-    frame = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
-
-    # process frame here
-    st.image(frame, channels="BGR")
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv2.CAP_PROP_FPS, 30)
 
     video_placeholder = st.empty()
-    
+
     while st.session_state.webcam_active:
         ret, frame = cap.read()
         if not ret:
             st.error("Camera error")
             break
-        
+
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = pose.process(image)
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        
+
         if results.pose_landmarks:
             if exercise == "Squats":
                 process_squats(results.pose_landmarks, image)
@@ -416,18 +406,16 @@ if img_file_buffer is not None:
                 process_shoulder_press(results.pose_landmarks, image)
             elif exercise == "Plank":
                 process_plank(results.pose_landmarks, image)
-            
+
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-        
-        cv2.putText(image, f"Reps: {st.session_state.counter}", (10, 30), 
-                   cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 0, 0), 2)
-        
+
+        cv2.putText(image, f"Reps: {st.session_state.counter}", (10, 30),
+                    cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 0, 0), 2)
+
         video_placeholder.image(image, channels="BGR")
-        
-       #if cv2.waitKey(1) & 0xFF == ord('q'):
-         #  break
 
     cap.release()
+
     
 
 def process_yoga_feed(yoga_pose):
